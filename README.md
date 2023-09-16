@@ -28,21 +28,25 @@ steps:
       - --bucket=gs://$_CACHE_BUCKET
       - --key=npm-build-cache-$( checksum package.json )-$( checksum package-lock.json )
       - --key_fallback=npm-build-cache-
+    volumes:
+      - name: "cache"
+        path: "/cache"
   - name: "gcr.io/cloud-builders/npm"
     id: "Run Install"
     args:
-      # - ci
-      - install
-      - --prefer-offline
-      - --cache=.npm
+      - i
     waitFor: ["Restoring NPM modules cache"]
   - name: "gcr.io/$PROJECT_ID/save_cache:latest"
     id: "Saving .npm cache"
     args:
+      - "--out=/cache/"
       - --bucket=gs://$_CACHE_BUCKET
       - --key=npm-build-cache-$( checksum package.json )-$( checksum package-lock.json )
-      - --path=.npm
+      - "--path=node_modules"
       - --no-clobber
+    volumes:
+      - name: "cache"
+        path: "/cache"
     waitFor: ["Run Install"]
 
 images: ["gcr.io/${PROJECT_ID}/cmpc-dogs-nest-api:latest"]
