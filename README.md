@@ -28,11 +28,13 @@ steps:
       - --bucket=gs://$_CACHE_BUCKET
       - --key=npm-build-cache-$( checksum package.json )-$( checksum package-lock.json )
       - --key_fallback=npm-build-cache-
-  - name: "node:16.17.0-alpine"
+  - name: "gcr.io/cloud-builders/npm"
     id: "Run Install"
-    entrypoint: npm
     args:
+      # - ci
       - install
+      - --prefer-offline
+      - --cache=.npm
     waitFor: ["Restoring NPM modules cache"]
   - name: "gcr.io/$PROJECT_ID/save_cache:latest"
     id: "Saving .npm cache"
